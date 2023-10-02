@@ -1,7 +1,11 @@
+require("dotenv/config");
 require("express-async-errors");
 const migrationsRun = require("./database/sqlite/migrations");
 const AppError = require("./utils/AppError");
 
+const uploadConfig = require("./configs/upload");
+
+const cors = require("cors");
 // Importando o express
 const express = require("express");
 
@@ -11,10 +15,12 @@ migrationsRun();
 
 // Inicializando o express
 const app = express();
+app.use(cors());
 // Informo ao express que o valor padrão recebido será JSON
 app.use(express.json());
 // Indicando as rotas que devem ser lidas pelo servidor
 app.use(routes);
+app.use("/files", express.static(uploadConfig.UPLOADS_FOLDER));
 
 app.use((error, request, response, next) => {
   // Se o error que foi gerado for uma instancia de AppError (foi lançado e criado uma instância),
@@ -35,7 +41,7 @@ app.use((error, request, response, next) => {
 });
 
 // Definindo a porta
-const PORT = 3333;
+const PORT = process.env.PORT || 3333;
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
 
 // Route params (é obrigatório ser passado para a página retornar uma response)
